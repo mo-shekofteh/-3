@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Like Button Example</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            line-height: 1.5;
+            background-color: transparent;
+            color: #e3e3e3;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .like-container {
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2vw;
+            margin-top: 2vw;
+        }
+
+        .like-button {
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            color: #6e6e6e;
+            background-color: transparent;
+            border: 0.2vw solid #6e6e6e;
+            padding: 1vw 2vw;
+            cursor: pointer;
+            border-radius: 0.5vw;
+            outline: none;
+        }
+
+        .like-button:hover {
+            background-color: #c4c4c4;
+        }
+
+        .like-count {
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            color: #6e6e6e;
+            background-color: transparent;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="like-container" id="likeContainer">
+        <button class="like-button" id="likeButton">Like</button>
+        <div class="like-count" id="likeCount">0</div>
+    </div>
+
+    <script>
+
+        
+        const binUrl = 'https://api.jsonbin.io/v3/b/66b139ccacd3cb34a870651f'; // Your bin URL
+        const accessKey = '$2a$10$j7w858/cQZ4hnHrR96gA3OF01dKes57RVCrok87f2PD8NlvJfVb.6'; // Your access key
+
+
+
+
+
+
+
+        
+        // Function to get the current like count from jsonbin.io
+        async function getLikeCount() {
+            try {
+                const response = await fetch(binUrl, {
+                    headers: {
+                        'X-Access-Key': accessKey
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                return data.record.likeCount;
+            } catch (error) {
+                console.error('Failed to fetch like count:', error);
+                return 0; // Return 0 if there's an error
+            }
+        }
+
+        // Function to update the like count on jsonbin.io
+        async function updateLikeCount(newCount) {
+            try {
+                await fetch(binUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Access-Key': accessKey
+                    },
+                    body: JSON.stringify({ likeCount: newCount })
+                });
+            } catch (error) {
+                console.error('Failed to update like count:', error);
+            }
+        }
+
+        // Initialise the like count
+        document.addEventListener('DOMContentLoaded', async () => {
+            const likeCountElement = document.getElementById('likeCount');
+            let likeCount = await getLikeCount();
+            likeCountElement.textContent = likeCount;
+
+            // Check if the user has already liked
+            const hasLiked = localStorage.getItem('hasLiked');
+
+            // Add event listener to the like button
+            document.getElementById('likeButton').addEventListener('click', async () => {
+                if (!hasLiked) {
+                    likeCount++;
+                    likeCountElement.textContent = likeCount;
+                    await updateLikeCount(likeCount);
+                    localStorage.setItem('hasLiked', 'true'); // Mark as liked
+                } else {
+                    alert('You have already liked this.');
+                }
+            });
+        });
+
+        // Function to adjust font size based on container size
+        function adjustFontSize() {
+            const container = document.getElementById('likeContainer');
+            const fontSize = container.offsetWidth * 0.15;
+            container.style.fontSize = fontSize + 'px';
+        }
+
+        // Adjust font size on load and on resize
+        window.addEventListener('load', adjustFontSize);
+        window.addEventListener('resize', adjustFontSize);
+    </script>
+</body>
+</html>
